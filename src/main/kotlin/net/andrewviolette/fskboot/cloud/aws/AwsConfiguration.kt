@@ -2,6 +2,7 @@ package net.andrewviolette.fskboot.cloud.aws
 
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedClient
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient
 import java.net.URI
 
