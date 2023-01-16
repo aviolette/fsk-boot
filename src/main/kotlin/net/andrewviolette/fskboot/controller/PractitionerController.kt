@@ -17,9 +17,8 @@ import java.util.UUID
 class PractitionerController(val practitionerService: PractitionerService) {
 
     @GetMapping("/{practitionerId}")
-    fun findPractitioner(@PathVariable practitionerId: UUID?): Practitioner? {
-        return null
-    }
+    fun findPractitioner(@PathVariable practitionerId: UUID): Practitioner? =
+        practitionerService.findById(practitionerId)
 
     @PostMapping
     @ResponseStatus(code = HttpStatus.CREATED)
