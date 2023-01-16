@@ -10,7 +10,11 @@ import java.net.URI
 class AwsConfiguration {
 
     @Bean
-    fun provideDynamodbClient(config: AwsPropertyConfiguration): DynamoDbClient = DynamoDbClient.builder()
-        .endpointOverride(URI(config.endpoint))
-        .build()
+    fun provideDynamodbClient(config: AwsPropertyConfiguration): DynamoDbClient {
+        val builder = DynamoDbClient.builder()
+        if (config.endpoint != null) {
+            builder.endpointOverride(config.endpoint)
+        }
+        return builder.build()
+    }
 }
