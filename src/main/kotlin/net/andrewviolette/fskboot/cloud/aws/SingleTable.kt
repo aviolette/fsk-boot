@@ -4,7 +4,12 @@ import net.andrewviolette.fskboot.config.AwsPropertyConfiguration
 import net.andrewviolette.fskboot.exception.ObjectNotFoundException
 import org.springframework.stereotype.Component
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient
-import software.amazon.awssdk.services.dynamodb.model.*
+import software.amazon.awssdk.services.dynamodb.model.AttributeValue
+import software.amazon.awssdk.services.dynamodb.model.Delete
+import software.amazon.awssdk.services.dynamodb.model.GetItemRequest
+import software.amazon.awssdk.services.dynamodb.model.Put
+import software.amazon.awssdk.services.dynamodb.model.TransactWriteItem
+import software.amazon.awssdk.services.dynamodb.model.TransactWriteItemsRequest
 
 @Component
 class SingleTable(private val config: AwsPropertyConfiguration, val dynamoDbClient: DynamoDbClient) {
@@ -28,18 +33,20 @@ class SingleTable(private val config: AwsPropertyConfiguration, val dynamoDbClie
         }
 
     fun toAttributeValues(entry: Map.Entry<String, Any>): AttributeValue =
-        when (entry.value) {
-            is AttributeValue -> entry.value as AttributeValue
-            is String -> AttributeValue.fromS(entry.value as String)
+        toAttributeValue(entry.value)
+
+    fun toAttributeValue(value: Any): AttributeValue =
+        when (value) {
+            is AttributeValue -> value as AttributeValue
+            is String -> AttributeValue.fromS(value as String)
             else -> throw RuntimeException("Type not supported")
         }
-
 
     fun transcatWrite(vararg transactions: Transaction) {
         dynamoDbClient.transactWriteItems(
             TransactWriteItemsRequest.builder().transactItems(transactions.map { transaction ->
-                if (transaction is Transaction.Create) {
-                    TransactWriteItem.builder().put(
+                when (transaction) {
+                    is Transaction.Create -> TransactWriteItem.builder().put(
                         Put.builder()
                             .tableName(config.tableName)
                             .item(
@@ -48,8 +55,18 @@ class SingleTable(private val config: AwsPropertyConfiguration, val dynamoDbClie
                             .expressionAttributeNames(mapOf("#pk" to "pk"))
                             .build()
                     ).build()
-                } else {
-                    null
+
+                    is Transaction.Delete -> TransactWriteItem.builder().delete(
+                        Delete.builder()
+                            .tableName(config.tableName)
+                            .key(
+                                mapOf(
+                                    "pk" to toAttributeValue(transaction.pk),
+                                    "sk" to toAttributeValue(transaction.sk)
+                                )
+                            )
+                            .build()
+                    ).build()
                 }
             }).build()
         )

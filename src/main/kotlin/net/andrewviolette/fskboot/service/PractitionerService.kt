@@ -55,7 +55,17 @@ class PractitionerService(
         )
     }
 
-    fun findById(practitionerId: UUID): Practitioner? {
+    fun delete(practitionerId: UUID) {
+        val key = "PRACTITIONER#${practitionerId}"
+        val practitioner = findById(practitionerId)
+        val emailKey = "USEREMAIL#${practitioner.email}"
+        singleTable.transcatWrite(
+            Transaction.Delete(key, key),
+            Transaction.Delete(emailKey, emailKey)
+        )
+    }
+
+    fun findById(practitionerId: UUID): Practitioner {
         return convert(singleTable.getById("PRACTITIONER", practitionerId))
     }
 
