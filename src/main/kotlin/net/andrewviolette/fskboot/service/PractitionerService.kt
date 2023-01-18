@@ -5,8 +5,9 @@ import net.andrewviolette.fskboot.cloud.aws.Transaction
 import net.andrewviolette.fskboot.exception.ObjectExistsException
 import net.andrewviolette.fskboot.model.Practitioner
 import org.springframework.stereotype.Service
-import software.amazon.awssdk.services.dynamodb.model.*
-import java.util.*
+import software.amazon.awssdk.services.dynamodb.model.AttributeValue
+import software.amazon.awssdk.services.dynamodb.model.TransactionCanceledException
+import java.util.UUID
 
 @Service
 class PractitionerService(
